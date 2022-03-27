@@ -167,6 +167,36 @@ class DalembertFinito(Dalembert):
             self.estado = False
         return self.estado
 
+class Fibonacci(Apostador):
+    def __init__(self,id , c, a):
+        self.capital = [c]
+        self.seleccion_apuesta = a
+        self.rondas_ganadas = 0
+        self.jugador_id = id
+        self.multiplicador = 1
+        self.frecuencia_ganadas = [0.0]
+        self.estado = True
+
+    def actualizaCapital(self, monto):
+        self.capital[-1] += monto * self.multiplicador
+        if monto > len(self.seleccion_apuesta):
+            self.rondas_ganadas += 1
+            if self.multiplicador != 1:
+                 self.multiplicador -= 1
+        else:
+            self.multiplicador += 1
+        self.frecuencia_ganadas.append(self.rondas_ganadas / (len(self.frecuencia_ganadas)))
+
+class FibonacciFinito(Fibonacci):
+
+    def apuesta(self):
+        if (self.capital[-1] - len(self.seleccion_apuesta) * self.multiplicador) >= 0:
+            self.capital.append(self.capital[-1] - len(self.seleccion_apuesta) * self.multiplicador)
+        else:
+            self.capital[-1] = 0
+            self.estado = False
+        return self.estado
+
 
 # Genera variables
 tiradas = 200
@@ -304,12 +334,14 @@ frecuencias = []
 for ron in range(rondas):
     numeros_obtenidos = []
     apostadores = []
+    cont = 0
     apostadores.append(MartingalaFinito('Impar capital finito', 20, ['I']))
     for tirada in range(tiradas):
 # Apuestas:
+        
         estado = apostadores[0].apuesta()
         if estado:
-
+            cont += 1
 # saca numero y obtiene datos
             numeros_obtenidos.append(random.randint(0, 36))
             numero_actual = rul.datosNumero(numeros_obtenidos[tirada])
@@ -323,7 +355,8 @@ for ron in range(rondas):
             apostadores[0].actualizaCapital(pago)
         else:
             tirada = tiradas
-
+            
+    print('Jugada ', ron+1, 'capital 0 en ', cont, 'jugadas')
 #Fin de ronda recolecta resultados
     datos_total = apostadores[0].resultados()
     datos.append(datos_total[1])
@@ -369,8 +402,6 @@ plt.xlabel('Tiradas')
 plt.ylabel('Frecuencia')
 plt.show()
 
-
-
 # -----------------------------------------------------------------------------------------------# 
 
 #Otro tipo de apuesta a D'alembert infinito
@@ -386,6 +417,7 @@ for ron in range(rondas):
     numeros_obtenidos = []
     apostadores = []
     apostadores.append(Dalembert('D\'Alembert: Impar capital finito', 500, ['I']))
+
     for tirada in range(tiradas):
 # Apuestas:
             apostadores[0].apuesta()
@@ -429,7 +461,7 @@ plt.ylabel('Frecuencia')
 plt.show()
 
 
-#GRAFICAS PARA 8 capital finito
+#GRAFICAS PARA 10 capital finito
 plt.title('D\'Alembert: Capital en 10 jugadas')
 for ron in range(rondas):
     x = np.linspace(0, len(datos[ron]), len(datos[ron]))
@@ -464,12 +496,13 @@ frecuencias = []
 for ron in range(rondas):
     numeros_obtenidos = []
     apostadores = []
+    cont = 0
     apostadores.append(DalembertFinito('D\'Alembert: Apuesta Impar con cap. finito', 20, ['I']))
     for tirada in range(tiradas):
 
         estado = apostadores[0].apuesta()
         if estado:
-
+            cont += 1
 # saca numero y obtiene datos
 
             numeros_obtenidos.append(random.randint(0, 36))
@@ -484,7 +517,7 @@ for ron in range(rondas):
             apostadores[0].actualizaCapital(pago)
         else:
             tirada = tiradas
-
+    print('Jugada ', ron+1, 'capital 0 en ', cont, 'jugadas')
 #Fin de ronda recolecta resultados
     datos_total = apostadores[0].resultados()
     print(len(datos_total[1]))
