@@ -5,7 +5,7 @@ import statistics
 
 
 #Datos
-n = 10000
+n = 5000
 valores_obtenidos = []
 for i in range(n):
 	valores_obtenidos.append(random.randrange(37))
