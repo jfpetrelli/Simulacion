@@ -12,7 +12,8 @@ for i in range(n):
 
 valor = random.randrange(37)
 
-print('Valor obtenido:', valor)
+print('Numero de tiradas:', n)
+print('Valor obtenido aleatoriamente:', valor)
 
 #--------------------------------#
 
@@ -29,6 +30,8 @@ for i in range(1,n):
     lista_frec_relativa.append(f_r)
     total_tiradas.append(i)
 
+print('Numero de apariciones del numero', valor , 'en', n,'tiradas:', num_apariciones)
+print('Promedio:', statistics.mean(lista_frec_relativa) )
 #Grafica frecuencia relativa    
 plt.title('Frecuencia relativa del número '+ str(valor)) 
 plt.plot(total_tiradas, lista_frec_relativa,'ro-', markersize=0.5, lw=0.5)
