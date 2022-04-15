@@ -65,7 +65,7 @@ suma = 0
 
 matriz_muestras = []
 
-for i in range(3):
+for i in range(5):
    matriz_muestras.append(genera_lista_muestras(cantidad_numeros_aleatorios,rango_desde, rango_hasta))
 
 for i in range(len(matriz_muestras)):
