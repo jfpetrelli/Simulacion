@@ -1,185 +1,455 @@
-import scipy.stats as stat #es para sacar el valor de chi cuadrado con N grados de libertad y un alfa.
-import random 
-import math
+import random
+import scipy.stats as stats
+from math import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
-#Generar valores con el GCL
-def GenerarValoresPorGCL(z0, a, c, m):
-    Ui = []
-    Ui.append(z0 / m)
-    zant = z0
-    for i in range (999):
-        zi = (zant * a + c) %m
-        Ui.append(zi / m)
-        zant = zi
-    return Ui
 
-#Generador de python
-def llenarVectorAleatorio():
-    x = []
-    for i in range(1000):
-        x.append(math.trunc(random.uniform(200,300)))
-    return x
+#Para tests
+test = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+test2= [0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5,
+        0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5,
+        0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5,
+        0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5,
+        0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5,]
+test_corridas = [41, 68, 89, 94, 74, 91, 55, 62, 36, 27, 19, 72, 75, 9, 54, 2, 1, 36, 16, 28, 18, 1,
+                 95, 69, 18, 47, 23, 32, 82, 53, 31, 42, 73, 4, 83, 45, 13, 57, 63, 29]
+test3 = [0.1, 0.1, 0.1, 0.3, 0.3, 0.3, 0.6, 0.6, 0.6, 0.9]
+media_corridas = sum(test_corridas) / len (test_corridas)
 
 
+#Generadores
+def medioCuadrado(semilla, cantidad):
 
-rangos = [range(200,210),range(210,221),range(221,231),
-range(231,241),range(241,251),range(251,261),
-range(261,271),range(271,281),range(281,291),range(291,301)]
+    listaSemillas = [semilla]
+    listaValores = []
+    listaPseudo = []
 
-numeros =  [218, 275, 229, 272, 257, 285, 255, 206, 279, 288,
-292, 255, 201, 204, 205, 222, 283, 258, 248, 230,
-204, 279, 242, 215, 222, 239, 270, 264, 275, 282,
-279, 241, 242, 223, 260, 263, 232, 285, 246, 255,
-200, 296, 245, 299, 280, 228, 298, 278, 300, 255,
-264, 259, 207, 295, 269, 215, 250, 245, 275, 204,
-264, 237, 242, 262, 213, 202, 298, 272, 270, 201,
-250, 216, 212, 293, 289, 291, 219, 281, 230, 269,
-292, 205, 238, 294, 254, 278, 208, 241, 220, 288,
-283, 235, 220, 241, 223, 239, 297, 275, 216, 265,
-220, 292, 258, 264, 216, 298, 218, 274, 294, 213,
-219, 258, 244, 229, 242, 271, 223, 288, 208, 245,
-250, 240, 290, 257, 274, 278, 254, 205, 221, 216,
-217, 256, 274, 267, 223, 297, 247, 230, 296, 240,
-208, 219, 282, 214, 250, 235, 271, 253, 293, 245,
-255, 291, 267, 266, 246, 259, 215, 261, 220, 287,
-225, 247, 283, 248, 233, 206, 254, 223, 240, 216,
-280, 257, 285, 260, 246, 238, 276, 275, 273, 234,
-256, 207, 222, 289, 295, 231, 247, 203, 244, 265,
-213, 218, 203, 228, 253, 221, 265, 216, 293, 272,
-295, 256, 227, 214, 233, 280, 242, 274, 228, 272,
-280, 201, 242, 284, 225, 237, 283, 296, 271, 258,
-211, 200, 244, 213, 268, 276, 233, 280, 265, 207,
-290, 214, 296, 201, 283, 259, 256, 273, 236, 269,
-289, 229, 256, 267, 299, 280, 294, 249, 223, 216,
-215, 250, 219, 267, 270, 225, 231, 264, 229, 289,
-212, 279, 238, 259, 256, 288, 275, 299, 211, 214,
-291, 240, 275, 267, 268, 213, 225, 272, 200, 292,
-232, 228, 219, 293, 261, 280, 238, 243, 291, 209,
-204, 229, 284, 233, 215, 218, 252, 265, 262, 221,
-215, 207, 223, 260, 269, 294, 238, 258, 297, 217,
-211, 200, 288, 227, 242, 233, 210, 225, 263, 266,
-263, 268, 250, 231, 209, 262, 206, 238, 244, 251,
-266, 261, 249, 285, 275, 281, 207, 263, 206, 267,
-235, 266, 264, 206, 252, 212, 214, 297, 238, 220,
-291, 234, 232, 271, 244, 258, 215, 238, 284, 243,
-278, 295, 281, 206, 216, 236, 215, 297, 285, 256,
-240, 216, 296, 281, 206, 208, 266, 257, 288, 219,
-217, 241, 246, 279, 271, 236, 252, 204, 273, 218,
-280, 211, 246, 207, 230, 235, 216, 278, 225, 200,
-265, 291, 245, 219, 274, 267, 272, 259, 214, 254,
-212, 260, 251, 285, 211, 291, 300, 220, 227, 255,
-300, 200, 245, 280, 274, 272, 266, 252, 270, 287,
-207, 229, 283, 280, 235, 286, 221, 261, 251, 265,
-210, 292, 291, 204, 275, 238, 229, 215, 221, 227,
-293, 211, 269, 216, 219, 262, 224, 264, 249, 276,
-284, 233, 259, 282, 268, 299, 291, 295, 216, 208,
-239, 217, 224, 298, 273, 271, 206, 234, 249, 289,
-296, 207, 221, 226, 298, 250, 225, 215, 265, 291,
-290, 229, 294, 287, 268, 225, 213, 207, 244, 270,
-285, 277, 216, 256, 251, 266, 242, 271, 283, 297,
-236, 250, 278, 284, 239, 248, 275, 215, 285, 212,
-200, 254, 221, 261, 247, 270, 225, 214, 281, 207,
-228, 210, 223, 219, 282, 224, 203, 271, 230, 201,
-264, 300, 243, 272, 214, 245, 293, 211, 213, 265,
-297, 281, 263, 213, 225, 216, 228, 209, 221, 256,
-262, 256, 204, 249, 296, 257, 277, 228, 260, 222,
-260, 293, 224, 209, 200, 219, 241, 261, 300, 287,
-298, 290, 224, 235, 273, 219, 215, 294, 247, 210,
-203, 223, 263, 281, 273, 269, 226, 221, 249, 265,
-233, 210, 200, 262, 207, 278, 242, 206, 294, 263,
-202, 209, 232, 263, 204, 227, 218, 224, 234, 293,
-220, 292, 271, 264, 289, 252, 231, 287, 201, 246,
-288, 300, 260, 200, 298, 249, 296, 214, 267, 238,
-255, 300, 266, 294, 262, 234, 228, 260, 296, 203,
-267, 278, 210, 243, 250, 272, 290, 251, 264, 249,
-267, 204, 282, 250, 210, 252, 289, 247, 266, 284,
-241, 267, 203, 239, 246, 291, 297, 280, 247, 223,
-255, 254, 216, 246, 290, 289, 284, 201, 252, 217,
-291, 214, 264, 283, 232, 231, 299, 215, 269, 227,
-233, 219, 291, 257, 245, 275, 281, 262, 235, 276,
-203, 283, 234, 274, 278, 263, 271, 250, 214, 273,
-279, 276, 266, 222, 249, 232, 239, 207, 294, 287,
-230, 268, 207, 258, 215, 253, 293, 223, 254, 259,
-253, 217, 200, 248, 289, 260, 236, 210, 215, 225,
-283, 255, 229, 268, 203, 206, 263, 200, 243, 240,
-275, 203, 248, 276, 281, 278, 233, 255, 299, 261,
-223, 289, 247, 270, 244, 267, 256, 251, 268, 202,
-300, 297, 236, 239, 299, 253, 268, 231, 249, 228,
-220, 244, 295, 276, 272, 215, 251, 255, 296, 293,
-254, 236, 295, 283, 225, 292, 226, 201, 221, 291,
-226, 255, 258, 286, 220, 257, 285, 242, 202, 240,
-283, 300, 264, 273, 247, 257, 265, 269, 214, 202,
-245, 243, 202, 224, 219, 204, 297, 266, 228, 211,
-297, 271, 235, 255, 290, 225, 240, 261, 220, 200,
-211, 269, 236, 203, 276, 207, 228, 206, 257, 275,
-243, 250, 262, 277, 291, 214, 269, 249, 220, 217,
-285, 219, 257, 246, 249, 293, 299, 289, 294, 228,
-262, 229, 236, 277, 253, 279, 247, 217, 230, 223,
-246, 200, 244, 272, 297, 285, 248, 263, 223, 299,
-256, 292, 224, 239, 288, 226, 275, 297, 205, 228,
-264, 258, 213, 255, 269, 296, 221, 233, 291, 295,
-257, 275, 278, 265, 232, 218, 235, 241, 243, 296,
-247, 254, 295, 249, 270, 271, 282, 205, 246, 279,
-278, 279, 235, 215, 286, 269, 263, 207, 245, 293,
-295, 226, 218, 221, 219, 260, 266, 267, 243, 200,
-212, 219, 227, 207, 269, 200, 233, 283, 251, 221,
-207, 249, 220, 230, 215, 212, 265, 264, 294, 297,
-281, 288, 217, 254, 219, 236, 295, 275, 298, 255,
-288, 243, 229, 237, 215, 212, 280, 278, 245, 225]
+    for i in range(cantidad):
 
-# print(numeros)
-#CALCULO FO
-def pruebaDeHuecos(arr):
-    numeros = arr
-    i = 0
-    k = 0
-    CANTNUM=1000
-    TABLA = [
-                [0,0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0,0,0],
-                [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1],
-                [0,0,0,0,0,0,0,0,0,0]
-            ]
-    for numero in numeros:
-        k = 0
-        for rango in rangos:
-            if numero in rango:
-                (TABLA[0])[k] += 1
-            k += 1
-        i+=1
-    #CALCULO FOA , POA , |PEA - POA|
-    i = 0
-    acum = 0
-    for frecuencia in TABLA[0]:
-        acum += frecuencia 
-        (TABLA[1])[i] = acum
-        (TABLA[2])[i] = acum/CANTNUM
-        (TABLA[4])[i] = abs((TABLA[3])[i] - (TABLA[2])[i])
-        i += 1
-    maxIndex = np.where(TABLA[4] == np.amax(TABLA[4]))
-    maxIndex = (maxIndex[0])[0] 
-    DMCrit = (1.36/math.sqrt(CANTNUM))
-    print(' RANGO           |  FO     |  FOA    |   POA  |  PEA  |   (|PEA - POA|)    |')
-    print('---------------------------------------------------------------------------')
-    i = 0
-    for c in TABLA[1]:
-        if ( i == maxIndex):
-            print(" %(5)s | %(0)s      | %(1)s     | %(2)s  |   %(3)s |  %(4)s  |" % {'0':  (TABLA[0])[i], '1': (TABLA[1])[i],
-                                                                                        '2': (TABLA[2])[i],'3': (TABLA[3])[i],
-                                                                                        '4': '\033[93m'+str((TABLA[4])[i])+'\033[0m','5':rangos[i]})
-            print('---------------------------------------------------------------------------')
-        else:
-            print(" %(5)s | %(0)s      | %(1)s     | %(2)s  |   %(3)s |  %(4)s  |" % {'0':  (TABLA[0])[i], '1': (TABLA[1])[i],
-                                                                                    '2': (TABLA[2])[i],'3': (TABLA[3])[i],
-                                                                                    '4': (TABLA[4])[i],'5':rangos[i]})
-            print('---------------------------------------------------------------------------')
-        i +=1 
-    if(TABLA[4][maxIndex]<=DMCrit):
-        print(('\033[92m'+' %(0)s SE ACEPTA HIPOTESIS'+'\033[0m')%{'0':str(TABLA[4][maxIndex]) + ' <= ' + str(DMCrit)})
+        valor = int(listaSemillas[i]) ** 2
+        valor = str(valor).zfill(8)
+        listaValores.append(int(valor))
+
+        pseudo = str(valor)[2:6]
+        listaPseudo.append(float("0." + pseudo))
+
+        if pseudo == "0000":
+            break
+
+        if i+1 != cantidad:
+            listaSemillas.append(int(pseudo))
+
+    return listaPseudo
+def gcl(semilla, a, c,  m, cantidad):
+
+    listaSemillas = [semilla]
+    listaValores = []
+    listaPseudo = []
+
+    for i in range(cantidad):
+        valor = (a * listaSemillas[i] + c) % m
+        listaValores.append(valor)
+
+        psuedo = valor / m
+        listaPseudo.append(psuedo)
+
+        if i+1 != cantidad:
+            listaSemillas.append(valor)
+
+    return listaPseudo
+
+# Test Chi cuadrado
+def test_chiCuadrado(lista):
+    obs = []
+    esp = []
+    cant_elementos = len(lista)
+    x2_max = 12.59
+    for i in range(10):
+        obs.append(0)
+        esp.append(cant_elementos/10)
+
+    obsesp = []
+    obsesp2 = []
+    chi_cuadrado = []
+
+    a = 0
+    b = 0
+    c = 0
+    d = 0
+    e = 0
+    f = 0
+    g = 0
+    h = 0
+    j = 0
+    l = 0
+
+    for i in lista:
+        if (i < 0.1):
+            obs[0] = a = a + 1
+        elif (i >= 0.1 and i < 0.2):
+            obs[1] = b = b + 1
+        elif (i >= 0.2 and i < 0.3):
+            obs[2] = c = c + 1
+        elif (i >= 0.3 and i < 0.4):
+            obs[3] = d = d + 1
+        elif (i >= 0.4 and i < 0.5):
+            obs[4] = e = e + 1
+        elif (i >= 0.5 and i < 0.6):
+            obs[5] = f = f + 1
+        elif (i >= 0.6 and i < 0.7):
+            obs[6] = g = g + 1
+        elif (i >= 0.7 and i < 0.8):
+            obs[7] = h = h + 1
+        elif (i >= 0.8 and i < 0.9):
+            obs[8] = j = j + 1
+        elif (i >= 0.9 and i < 1):
+            obs[9] = l = l + 1
+
+    for i in range(10):
+        obsesp.append(obs[i] - esp[i])
+        obsesp2.append(obsesp[i] ** 2)
+        chi_cuadrado.append((obsesp2[i] / esp[i]))
+
+    chi_acum = sum(chi_cuadrado)
+    """
+        print("lista de frec observada: ", obs)
+        print(sum(obs))
+        print("lista de frec observada - esperada: ", obsesp)
+
+        print("lista chi cuadrado: ", chi_cuadrado)
+        print("sumatoria chi cuadrado: ", chi_acum)
+        print("tabla chi cuadrada ", stats.chisquare(obs))
+    """
+
+    if chi_acum < x2_max:
+        estado = 'Aceptado'
     else:
-        print(('\033[91m'+' %(0)s SE RECHAZA HIPOTESIS'+'\033[0m') % {'0':str(TABLA[4][maxIndex]) + ' > ' + str(DMCrit)})
-    print('---------------------------------------------------------------------------')
-pruebaDeHuecos(numeros)
-pruebaDeHuecos(llenarVectorAleatorio())
+        estado = 'rechazado'
+    return 'Test Chicuadrados: ', estado
+
+"""    
+print(test_chiCuadrado(test))
+print(test_chiCuadrado(test2))
+print(test_chiCuadrado(test3))
+"""
+# TEST DE POKER
+'''
+ indice -  DESCRIPCION               - Frecuencia esperada
+    [0] - Todos distintos            - 0.3024
+    [1] - un par                     - 0.5040
+    [2] - dos pares                  - 0.1080
+    [3] - pierna (tres iguales)      - 0.0720
+    [4] - Full (par y pierna)        - 0.0090
+    [5] - poker (cuatro iguales)     - 0.0045
+    [6] - Todos iguales (5 iguales)  - 0.0001
+  '''
+def mano_poker(numero):
+
+    contador = [0]*10
+    if isinstance(numero, float):
+        aux = str(numero)
+        num = aux[2:7]
+    else:
+        aux = str(numero)
+        num = aux[0:5]
+
+    for digito in num:
+        contador[int(digito)] += 1
+
+    if contador.count(5) == 1:
+        return 6, 'Todos iguales'
+    elif contador.count(4) == 1:
+        return 5, 'poker'
+    elif contador.count(3) == 1 and contador.count(2) == 1:
+        return 4, 'full'
+    elif contador.count(3) == 1:
+        return 3, 'Pierna'
+    elif contador.count(2) == 2:
+        return 2, 'par doble'
+    elif contador.count(2) == 1:
+        return 1, 'par simple'
+    else:
+        return 0, 'distintos'
+def x2(obs, esp):
+    aux_x2 = [0] * len(esp)
+    for i in range(len(esp)):
+        aux_x2[i] = ((obs[i] - esp[i]) ** 2) / esp[i]
+    sum_x2 = sum(aux_x2)
+    return sum_x2
+def test_poker(conjunto):
+# Objetivo
+    #x2 6 grados de libertad, 95% = 12.59
+    x2_maximo = 12.59
+#Frecuencias esperadas
+    #            distintos   par  pardoble pierna  full    poker  5iguales
+    frecuencias = [0.3024, 0.5040, 0.1080, 0.0720, 0.0090, 0.0045, 0.0001]
+    for i in range(len(frecuencias)):
+         frecuencias[i] *= len(conjunto)
+
+#Frecuencias observadas
+    observadas = [0] * 7
+    for numero in conjunto:
+        tipo = mano_poker(numero)
+        observadas[tipo[0]] += 1
+
+    coef = x2(observadas, frecuencias)
+    if coef < x2_maximo:
+        estado = "Aceptado"
+    else:
+        estado = "rechazado"
+    return 'Test Poker: ',  estado
+"""
+for i in range(10):
+    semilla = random.randint(0,999999999)
+    conjunto_gcl = gcl(semilla, 7 ** 5, 0, 2 ** 31, 150000)
+    print('150.000 elemetos', test_poker(conjunto_gcl[2]))
+
+a = True
+
+while a:
+    semilla = random.randint(0, 999999999)
+    conjunto_gcl = gcl(semilla, 7 ** 5, 0, 2 ** 31, 150000)
+   
+    aux = test_poker(conjunto_gcl[2])
+    print('150.000 elemetos', aux)
+    if aux[1] == 'rechazado':
+        a = False
+"""
+
+# TEST de Independencia: Corridas de Arriba y Abajo de la Media
+def test_corridas_media (conjunto, media = 0.5, Z = 1.96):
+    media_esperada = media
+    n1 = 0
+    n2 = 0
+    b = 1
+    aux = ''
+
+    for n in conjunto:
+        if n < media_esperada:
+            n1 += 1
+            if aux == 'sobre':
+                b += 1
+            aux = 'bajo'
+        else:
+            n2 += 1
+            if aux == 'bajo':
+                b += 1
+            aux = 'sobre'
+
+    N = n1 + n2
+    if N <= 1:
+        estado = 'rechazado'
+
+    else:
+        media_test = (2 * n1 * n2 ) / (n1 + n2 ) +1
+        varianza_test = (2 * n1 * n2 * (2 * n1 * n2 - N)) / (N ** 2 * (N - 1))
+        if varianza_test != 0:
+            z_muestra = (b - media_test) / sqrt(varianza_test)
+
+            if z_muestra < Z:
+                estado = 'Aceptado'
+            else:
+                estado = 'rechazado'
+        else:
+            estado = 'rechazado'
+
+    return 'Test corridas: ', estado
+"""
+a = test_corridas_media(test2)
+b = test_corridas_media(test)
+c = test_corridas_media(test_corridas, media= 50)
+print(a)
+print(b)
+print(c)
+"""
+
+#Test Prueba de series
+def test_prueba_series (conjunto):
+    tabla = [[0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0]]
+    indice = [0, 0]
+    N = len(conjunto)
+    n = len(tabla)
+
+    frecuencia_tabla = (N - 1) / n ** 2
+    x_esperado = 36.42
+    for i in range(N-1):
+        pareja = [conjunto[i], conjunto[i+1]]
+        for j in range(len(pareja)):
+            if pareja[j] < 0.2:
+                indice[j] = 0
+            elif pareja[j] < 0.4:
+                indice[j] = 1
+            elif pareja[j] < 0.6:
+                indice[j] = 2
+            elif pareja[j] < 0.8:
+                indice[j] = 3
+            elif pareja[j] <= 1:
+                indice[j] = 4
+        tabla[indice[0]][indice[1]] += 1
+
+    aux_sum = 0
+
+    for i in range(n):
+        for j in range(n):
+            aux_sum += ((tabla[i][j] - frecuencia_tabla) ** 2)
+    X = ((n ** 2) / (N - 1)) * aux_sum
+
+    if X < x_esperado:
+        estado = 'Aceptado'
+    else:
+        estado = 'Rechazado'
+    return 'Test Series: ', estado
+"""
+print(test_prueba_series(test))
+print(test_prueba_series(test2))
+"""
+"""
+def test_global(conjunto):
+    print(test_chiCuadrado(conjunto))
+    print(test_poker(conjunto))
+    print(test_corridas_media(conjunto))
+    print(test_prueba_series(conjunto))   
+    return 
+"""
+def test_global(conjunto):
+    t_chi = test_chiCuadrado(conjunto)
+    t_poker = test_poker(conjunto)
+    t_corri = test_corridas_media(conjunto)
+    t_serie = test_prueba_series(conjunto)
+    estado = 'Rechazado'
+    print(t_chi)
+    print(t_poker)
+    print(t_corri)
+    print(t_serie)
+    if t_chi[1] == 'Aceptado' and t_poker[1] == 'Aceptado' and t_corri[1] == 'Aceptado' and t_serie[1] == 'Aceptado':
+        estado = 'Aceptado'
+    return estado
+
+""""
+print('conjunto test')
+test_global(test)
+print('conjunto test2')
+test_global(test2)
+"""
+def test_global_100():
+    acept = 0
+    recha = 0
+    for i in range(100):
+        print('Iteracion N°: ', i+1)
+        semilla = random.randint(0, 999999999)
+        print('Semilla: ', semilla)
+        conjunto_gcl = gcl(semilla, 7 ** 5, 0, 2 ** 31, 15000)
+        aux = test_global(conjunto_gcl)
+        if aux == 'Aceptado':
+            acept += 1
+        else:
+            recha += 1
+        del (conjunto_gcl)
+    print('Los resultados en 100 conjuntos de Random GCL con 15.000 elementos son:')
+    print('aceptado: ', acept)
+    print('rechazado: ', recha)
+
+def test_paramediocuadrados(conjunto):
+    #no realiza el de poker porque esta programado para 5 digitos
+    print(test_chiCuadrado(conjunto))
+    print(test_corridas_media(conjunto))
+    print(test_prueba_series(conjunto))
+    return
+"""
+
+
+
+
+
+
+################################################
+
+def semilla_aceptada_medio():
+    resultado = 'Rechazado'
+    semilla = random.randint(1, 9999)
+    conjunto_md = medioCuadrado(semilla, 1000)
+    a = test_chiCuadrado(conjunto_md[2])
+    b = test_corridas_media(conjunto_md[2])
+    c = test_prueba_series(conjunto_md[2])
+    if a[1] == 'Aceptado' and b[1] == 'Aceptado' and c[1] == 'Aceptado':
+        resultado = 'Aceptado'
+    print('semilla: ', semilla)
+    print(a, b, c)
+    return resultado, semilla
+
+aux = 'Rechazado'
+contador = 1
+while aux != 'Aceptado':
+    print("iteracion numero: ", contador)
+    respuesta = semilla_aceptada_medio()
+    aux = respuesta[0]
+    contador += 1
+
+"""
+def rand_python_100():
+    acept = 0
+    recha = 0
+    for i in range(100):
+        print ('Iteracion N°: ', i+1)
+        rand_python = []
+        for i in range(15000):
+            rand_python.append(random.random())
+        aux = test_global(rand_python)
+        if aux == 'Aceptado':
+            acept += 1
+        else:
+            recha += 1
+    print('Los resultados en 100 conjuntos de Random python con 15.000 elementos son:')
+    print('aceptado: ', acept)
+    print('rechazado: ', recha)
+
+def grafica_dispersion(conjunto):
+    n = int(len(conjunto) / 100)
+    puntos = []
+    promedios = []
+    media = []
+    for i in range(10):
+        inf = 0 + i * n
+        sup = n + i * n
+        aux = conjunto[inf:sup]
+        puntos.append(aux)
+#Promedio de X
+    for i in range(n):
+        sum = 0
+        for j in range(10):
+            sum += puntos[j][i]
+        promedios.append(sum / 10)
+#media acumulada
+    sum = 0
+    for i in range(n):
+        sum += promedios[i]
+        media.append(sum / (i+1))
+
+    x = np.linspace(1, n, n)
+    for i in range(len(puntos)):
+        plt.scatter(x, puntos[i],s=50, color='black')
+    plt.plot(x, promedios, color='red')
+    plt.plot(x, media, color='blue')
+    plt.show()
+
+semilla = random.randint(1000, 9999)
+conjunto_md = medioCuadrado(semilla, 1000)
+print('Conjunto medios cuadrados\nSemilla: ', semilla)
+test_paramediocuadrados(conjunto_md)
+
+semilla = random.randint(0, 99999999999999999999999999999999)
+conjunto_gcl = gcl(semilla, 7 ** 5, 0, 2 ** 31, 10000)
+print('conjunto gcl\nSemilla: ', semilla)
+test_global(conjunto_gcl)
+grafica_dispersion(conjunto_gcl)
+
+test_global_100()
+rand_python_100()
+
+
+
+print("FIN")
