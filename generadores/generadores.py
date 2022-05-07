@@ -3,7 +3,9 @@ import scipy.stats as stats
 from math import sqrt
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 
+archivo = open("generadores/Resultados.txt", "w")
 #Para tests
 test = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 test2= [0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5, 0.0, 0.9, 0.1, 0.8, 0.2, 0.7, 0.3, 0.6, 0.4, 0.5,
@@ -321,10 +323,24 @@ def test_global(conjunto):
     t_corri = test_corridas_media(conjunto)
     t_serie = test_prueba_series(conjunto)
     estado = 'Rechazado'
-    print(t_chi)
-    print(t_poker)
-    print(t_corri)
-    print(t_serie)
+    archivo.write(str(t_chi)+"\n")
+    archivo.write(str(t_poker)+"\n")
+    archivo.write(str(t_corri)+"\n")
+    archivo.write(str(t_serie)+"\n")
+    if t_chi[1] == 'Aceptado' and t_poker[1] == 'Aceptado' and t_corri[1] == 'Aceptado' and t_serie[1] == 'Aceptado':
+        estado = 'Aceptado'
+    return estado
+
+def test_global_gcl(conjunto):
+    t_chi = test_chiCuadrado(conjunto)
+    t_poker = test_poker(conjunto)
+    t_corri = test_corridas_media(conjunto)
+    t_serie = test_prueba_series(conjunto)
+    estado = 'Rechazado'
+    archivo.write(str(t_chi)+"\n")
+    archivo.write(str(t_poker)+"\n")
+    archivo.write(str(t_corri)+"\n")
+    archivo.write(str(t_serie)+"\n")
     if t_chi[1] == 'Aceptado' and t_poker[1] == 'Aceptado' and t_corri[1] == 'Aceptado' and t_serie[1] == 'Aceptado':
         estado = 'Aceptado'
     return estado
@@ -339,9 +355,9 @@ def test_global_100():
     acept = 0
     recha = 0
     for i in range(100):
-        print('Iteracion N°: ', i+1)
+        archivo.write('Iteracion N°: '+ str(i+1) + "\n")
         semilla = random.randint(0, 999999999)
-        print('Semilla: ', semilla)
+        archivo.write('Semilla: ' + str(semilla) + "\n")
         conjunto_gcl = gcl(semilla, 7 ** 5, 0, 2 ** 31, 15000)
         aux = test_global(conjunto_gcl)
         if aux == 'Aceptado':
@@ -349,15 +365,15 @@ def test_global_100():
         else:
             recha += 1
         del (conjunto_gcl)
-    print('Los resultados en 100 conjuntos de Random GCL con 15.000 elementos son:')
-    print('aceptado: ', acept)
-    print('rechazado: ', recha)
+    resultado_global.append('Los resultados en 100 conjuntos de Random GCL con 15.000 elementos son:\n')
+    resultado_global.append('aceptado: ' + str(acept) + "\n")
+    resultado_global.append('rechazado: ' + str(recha)  + "\n")
 
 def test_paramediocuadrados(conjunto):
     #no realiza el de poker porque esta programado para 5 digitos
-    print(test_chiCuadrado(conjunto))
-    print(test_corridas_media(conjunto))
-    print(test_prueba_series(conjunto))
+    archivo.write(str(test_chiCuadrado(conjunto)) + "\n")
+    archivo.write(str(test_corridas_media(conjunto)) + "\n")
+    archivo.write(str(test_prueba_series(conjunto)) + "\n")
     return
 """
 
@@ -394,7 +410,7 @@ def rand_python_100():
     acept = 0
     recha = 0
     for i in range(100):
-        print ('Iteracion N°: ', i+1)
+        archivo.write('Iteracion N°: ' + str(i+1) + "\n")
         rand_python = []
         for i in range(15000):
             rand_python.append(random.random())
@@ -403,9 +419,9 @@ def rand_python_100():
             acept += 1
         else:
             recha += 1
-    print('Los resultados en 100 conjuntos de Random python con 15.000 elementos son:')
-    print('aceptado: ', acept)
-    print('rechazado: ', recha)
+    resultado_python.append('Los resultados en 100 conjuntos de Random python con 15.000 elementos son:\n')
+    resultado_python.append('aceptado: ' + str(acept) + "\n")
+    resultado_python.append('rechazado: ' + str(recha) + "\n")
 
 def grafica_dispersion(conjunto):
     n = int(len(conjunto) / 100)
@@ -434,6 +450,7 @@ def grafica_dispersion(conjunto):
         plt.scatter(x, puntos[i],s=50, color='black')
     plt.plot(x, promedios, color='red')
     plt.plot(x, media, color='blue')
+    plt.title('Grafica de Dispersion de GCL')
     plt.show()
 
 semilla = random.randint(1000, 9999)
@@ -444,12 +461,18 @@ test_paramediocuadrados(conjunto_md)
 semilla = random.randint(0, 99999999999999999999999999999999)
 conjunto_gcl = gcl(semilla, 7 ** 5, 0, 2 ** 31, 10000)
 print('conjunto gcl\nSemilla: ', semilla)
-test_global(conjunto_gcl)
+test_global_gcl(conjunto_gcl)
 grafica_dispersion(conjunto_gcl)
+
+resultado_global = list()
+resultado_python = list()
 
 test_global_100()
 rand_python_100()
 
+archivo.write("\n" + (resultado_global[0]  + resultado_global[1] + resultado_global[2] + "\n"))
+archivo.write((resultado_python[0]  + resultado_python[1] + resultado_python[2] + "\n"))
+archivo.close()
 
 
-print("FIN")
+
